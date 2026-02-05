@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Development keys (NEVER commit private keys)
+devkeys/
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test artifacts
+coverage/
+.verity-test/
+
+# Generated containers for testing
+*.verity
+
+# Database files
+*.db
+*.sqlite
+
+# Environment
+.env
+.env.local

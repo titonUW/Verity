@@ -1,0 +1,36 @@
+VENDOR BANK ACCOUNT CHANGE REQUEST
+
+Date: 2024-01-15
+Reference: VBC-2024-001
+
+To: Accounts Payable Department
+From: Acme Supplies Inc.
+
+Subject: Update to Banking Details
+
+Dear Accounts Payable Team,
+
+Please be advised that Acme Supplies Inc. has changed its primary banking
+institution. Effective immediately, please update your records with our
+new banking information:
+
+Bank Name: First National Bank
+Account Name: Acme Supplies Inc.
+Account Number: 1234567890
+Routing Number: 021000021
+SWIFT Code: FNBAUS33
+
+This change is being made as part of our corporate banking consolidation
+initiative. All future payments should be directed to this new account.
+
+Please confirm receipt of this request by replying to this email or
+contacting our accounts receivable department at ar@acmesupplies.example.
+
+Thank you for your prompt attention to this matter.
+
+Sincerely,
+
+Jane Smith
+Chief Financial Officer
+Acme Supplies Inc.
+jane.smith@acmesupplies.example

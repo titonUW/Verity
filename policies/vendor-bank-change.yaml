@@ -1,0 +1,60 @@
+# Verity Context Policy: Vendor Banking Change Approval
+#
+# High-risk workflow requiring strong verification before approving
+# changes to vendor banking information (common fraud vector).
+
+workflow_name: vendor-bank-change
+description: |
+  Policy for approving vendor banking detail changes.
+  This is a high-risk operation commonly targeted by business email compromise (BEC) attacks.
+  Requires strong verification to prevent fraud.
+version: "1.0"
+
+# Strict requirements
+min_confidence: 75
+require_human_origin: true
+require_transparency_log: true
+
+decision_rules:
+  # Critical failures
+  - id: tampered_content
+    condition: "!integrity_ok"
+    decision: BLOCK
+    rationale: "Content integrity check failed - possible tampering detected"
+
+  - id: ai_generated
+    condition: "human_origin == NO"
+    decision: BLOCK
+    rationale: "Content appears to be AI-generated or AI-modified - blocking for fraud prevention"
+
+  - id: unknown_origin
+    condition: "human_origin == UNAVAILABLE"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Origin cannot be verified - requires additional verification (e.g., phone callback)"
+
+  - id: no_log_proof
+    condition: "!has_log"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Content not recorded in transparency log - requires out-of-band verification"
+
+  - id: invalid_log
+    condition: "has_log AND log_ok == false"
+    decision: BLOCK
+    rationale: "Transparency log proof is invalid - possible backdating attempt"
+
+  # Confidence thresholds
+  - id: low_confidence
+    condition: "confidence < 60"
+    decision: BLOCK
+    rationale: "Confidence score too low for high-risk operation"
+
+  - id: moderate_confidence
+    condition: "confidence < 75"
+    decision: WARN
+    rationale: "Confidence below threshold - additional verification recommended"
+
+  # Default allow if all checks pass
+  - id: approved
+    condition: "default"
+    decision: ALLOW
+    rationale: "All verification requirements satisfied"

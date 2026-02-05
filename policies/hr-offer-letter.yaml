@@ -1,0 +1,52 @@
+# Verity Context Policy: HR Offer Letter Issuance
+#
+# Moderate-risk workflow for issuing employment offer letters.
+# Ensures authenticity of official HR communications.
+
+workflow_name: hr-offer-letter
+description: |
+  Policy for HR offer letter issuance.
+  Ensures official offer letters are authentic and haven't been modified.
+  Protects both employer and candidate from fraudulent offers.
+version: "1.0"
+
+# Moderate requirements
+min_confidence: 60
+require_human_origin: false  # Templates are acceptable
+require_transparency_log: false  # Recommended but not required
+
+decision_rules:
+  # Critical checks
+  - id: tampered
+    condition: "!integrity_ok"
+    decision: BLOCK
+    rationale: "Document integrity compromised - offer letter may have been modified"
+
+  # AI detection
+  - id: fully_ai_generated
+    condition: "human_origin == NO AND confidence < 50"
+    decision: WARN
+    rationale: "Document appears fully AI-generated with low confidence - review before issuance"
+
+  # Confidence thresholds
+  - id: very_low_confidence
+    condition: "confidence < 40"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Very low confidence score - document requires HR manager review"
+
+  - id: low_confidence
+    condition: "confidence < 60"
+    decision: WARN
+    rationale: "Below confidence threshold - consider additional review"
+
+  # Log bonus
+  - id: logged_and_verified
+    condition: "has_log AND log_ok AND confidence >= 70"
+    decision: ALLOW
+    rationale: "Fully verified with transparency log - approved for issuance"
+
+  # Standard approval
+  - id: standard_approval
+    condition: "default"
+    decision: ALLOW
+    rationale: "Document passes verification requirements"

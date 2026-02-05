@@ -1,0 +1,61 @@
+# Verity Context Policy: Wire Transfer Approval
+#
+# Critical financial workflow requiring maximum verification before
+# authorizing wire transfers, especially for large or international transfers.
+
+workflow_name: wire-transfer
+description: |
+  Policy for wire transfer authorization documents.
+  Wire transfers are irreversible and a prime target for fraud.
+  This policy enforces the strictest verification requirements.
+version: "1.0"
+
+# Maximum security requirements
+min_confidence: 80
+require_human_origin: true
+require_transparency_log: true
+
+decision_rules:
+  # Absolute blockers
+  - id: integrity_failure
+    condition: "!integrity_ok"
+    decision: BLOCK
+    rationale: "Cryptographic integrity check failed - document has been modified"
+
+  - id: ai_content
+    condition: "human_origin == NO"
+    decision: BLOCK
+    rationale: "AI-generated or AI-modified content detected - wire transfer authorization must be human-verified"
+
+  - id: unverified_origin
+    condition: "human_origin == UNAVAILABLE"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Human origin cannot be verified - callback to authorized signer required before processing"
+
+  # Log requirements
+  - id: missing_audit_trail
+    condition: "!has_log"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "No transparency log record - manual verification of authorization chain required"
+
+  - id: invalid_audit_trail
+    condition: "log_ok == false"
+    decision: BLOCK
+    rationale: "Transparency log proof invalid - authorization may have been backdated"
+
+  # Confidence requirements
+  - id: insufficient_confidence
+    condition: "confidence < 70"
+    decision: BLOCK
+    rationale: "Verification confidence too low for wire transfer authorization"
+
+  - id: marginal_confidence
+    condition: "confidence < 80"
+    decision: WARN
+    rationale: "Confidence below optimal threshold - consider additional verification"
+
+  # Approved
+  - id: verified
+    condition: "default"
+    decision: ALLOW
+    rationale: "Wire transfer authorization verified - all security checks passed"
