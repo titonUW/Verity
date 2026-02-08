@@ -132,12 +132,12 @@ export default function AuditPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <CardTitle className="verity-heading">Event Log</CardTitle>
             <div className="flex gap-3">
-              <Select value={actionFilter} onValueChange={setActionFilter}>
+              <Select value={actionFilter || "all"} onValueChange={(v) => setActionFilter(v === "all" ? "" : v)}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Action" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Actions</SelectItem>
+                  <SelectItem value="all">All Actions</SelectItem>
                   <SelectItem value="INTAKE">INTAKE</SelectItem>
                   <SelectItem value="VERIFY">VERIFY</SelectItem>
                   <SelectItem value="DECISION">DECISION</SelectItem>
@@ -146,12 +146,12 @@ export default function AuditPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={entityFilter} onValueChange={setEntityFilter}>
+              <Select value={entityFilter || "all"} onValueChange={(v) => setEntityFilter(v === "all" ? "" : v)}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Entity" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Entities</SelectItem>
+                  <SelectItem value="all">All Entities</SelectItem>
                   <SelectItem value="FILE">FILE</SelectItem>
                   <SelectItem value="POLICY">POLICY</SelectItem>
                   <SelectItem value="USER">USER</SelectItem>
