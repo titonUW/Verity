@@ -1,0 +1,216 @@
+// Verity Dashboard Database Schema
+// Using SQLite for local demo
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core file record - represents an ingested file
+model FileRecord {
+  id          String   @id @default(cuid())
+  filename    String
+  mime        String
+  size        Int
+  sha256      String
+  uploadedAt  DateTime @default(now())
+  workflow    String
+  tags        String   @default("[]") // JSON array stored as string
+  status      String   @default("QUEUED") // QUEUED, PROCESSING, VERIFIED, FAILED
+  submitter   String?
+  storePayload Boolean @default(false)
+  payloadPath String?  // Path to stored payload if storePayload=true
+
+  // Relations
+  verificationRuns  VerificationRun[]
+  trustReports      TrustReport[]
+  signalResults     SignalResult[]
+  provenanceEvents  ProvenanceEvent[]
+  policyDecisions   PolicyDecision[]
+  transparencyProofs TransparencyProof[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([workflow])
+  @@index([status])
+  @@index([uploadedAt])
+}
+
+// Verification run - each time we verify a file
+model VerificationRun {
+  id              String   @id @default(cuid())
+  fileId          String
+  startedAt       DateTime @default(now())
+  finishedAt      DateTime?
+  verifierVersion String   @default("1.0.0")
+  overallStatus   String   @default("PENDING") // PENDING, PASSED, FAILED, ERROR
+
+  file          FileRecord     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  signalResults SignalResult[]
+
+  @@index([fileId])
+}
+
+// Full trust report stored as JSON
+model TrustReport {
+  id        String   @id @default(cuid())
+  fileId    String
+  json      String   // Full trust report JSON
+  createdAt DateTime @default(now())
+
+  file FileRecord @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+}
+
+// Individual signal results from verification
+model SignalResult {
+  id           String  @id @default(cuid())
+  fileId       String
+  runId        String
+  name         String
+  delta        Int     // Score contribution (can be negative)
+  severity     String  // LOW, MEDIUM, HIGH, CRITICAL
+  explanation  String
+  evidenceJson String  @default("{}") // JSON evidence
+
+  file FileRecord      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  run  VerificationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+  @@index([runId])
+}
+
+// Provenance events - chain of custody
+model ProvenanceEvent {
+  id            String   @id @default(cuid())
+  fileId        String
+  idx           Int      // Event index in chain
+  eventType     String   // CAPTURE, EDIT, AI_EDIT, TRANSFER, SIGN, PUBLISH
+  eventTime     DateTime
+  actorKeyId    String
+  eventHash     String
+  prevEventHash String?
+  signature     String
+  valid         Boolean  @default(true)
+  metadata      String   @default("{}") // Additional event metadata JSON
+
+  file FileRecord @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([fileId, idx])
+  @@index([fileId])
+}
+
+// Workflow definitions
+model PolicyWorkflow {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions PolicyVersion[]
+}
+
+// Policy versions - immutable once published
+model PolicyVersion {
+  id          String   @id @default(cuid())
+  workflowId  String
+  version     String
+  publishedAt DateTime @default(now())
+  policyJson  String   // Full policy JSON/YAML
+  createdBy   String?
+  isActive    Boolean  @default(true)
+
+  workflow  PolicyWorkflow   @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  decisions PolicyDecision[]
+
+  @@unique([workflowId, version])
+  @@index([workflowId])
+}
+
+// Policy decisions for files
+model PolicyDecision {
+  id              String   @id @default(cuid())
+  fileId          String
+  workflowId      String
+  policyVersionId String
+  decision        String   // ALLOW, WARN, REQUIRE_EXTRA_VERIFICATION, BLOCK
+  rationale       String
+  matchedRules    String   @default("[]") // JSON array of matched rule IDs
+  createdAt       DateTime @default(now())
+
+  file          FileRecord    @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  policyVersion PolicyVersion @relation(fields: [policyVersionId], references: [id])
+
+  @@index([fileId])
+  @@index([decision])
+}
+
+// Transparency log proofs
+model TransparencyProof {
+  id            String   @id @default(cuid())
+  fileId        String
+  leafIndex     Int
+  leafHash      String
+  rootHash      String
+  treeSize      Int
+  checkpointSig String
+  proofJson     String   // Merkle inclusion proof JSON
+  createdAt     DateTime @default(now())
+
+  file FileRecord @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([fileId])
+}
+
+// Audit log - append-only
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String   // INTAKE, VERIFY, DECISION, POLICY_CHANGE, EXPORT, LOGIN, etc.
+  entityType String  // FILE, POLICY, USER, SYSTEM
+  entityId  String?
+  actor     String   @default("system")
+  details   String   @default("{}") // JSON details
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+// Trusted capture keys
+model TrustedKey {
+  id          String   @id @default(cuid())
+  keyId       String   @unique
+  publicKey   String
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// System settings
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+
+  updatedAt DateTime @updatedAt
+}
+
+// Simple user model for POC
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  role      String   @default("VIEWER") // ADMIN, ANALYST, VIEWER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

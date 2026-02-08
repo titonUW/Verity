@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verity.example/schemas/trust-report.json",
+  "title": "Verity Trust Report",
+  "description": "Schema for Verity Trust Reports - comprehensive verification output for digital content",
+  "type": "object",
+  "required": ["human_origin_proof", "reality_confidence", "context_decision", "integrity", "timestamps", "ids"],
+  "properties": {
+    "human_origin_proof": {
+      "type": "object",
+      "description": "Determination of whether content was created by a human without AI modification",
+      "required": ["value", "reason"],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": ["YES", "NO", "UNAVAILABLE"],
+          "description": "YES = verified human origin, NO = AI modification detected, UNAVAILABLE = insufficient data"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Human-readable explanation of the determination"
+        },
+        "evidence": {
+          "type": "object",
+          "description": "Supporting evidence for the determination",
+          "properties": {
+            "capture_verified": {
+              "type": "boolean",
+              "description": "Whether a CAPTURE event from a trusted device was verified"
+            },
+            "ai_edit_detected": {
+              "type": "boolean",
+              "description": "Whether an AI_EDIT event was found in provenance chain"
+            }
+          }
+        }
+      }
+    },
+    "reality_confidence": {
+      "type": "object",
+      "description": "Confidence score and grade for content authenticity",
+      "required": ["score", "grade", "reasons"],
+      "properties": {
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Confidence score from 0-100"
+        },
+        "grade": {
+          "type": "string",
+          "enum": ["A", "B", "C", "D", "F"],
+          "description": "Letter grade: A (90-100), B (80-89), C (70-79), D (60-69), F (<60)"
+        },
+        "reasons": {
+          "type": "array",
+          "description": "List of signals that contributed to the score",
+          "items": {
+            "type": "object",
+            "required": ["name", "delta", "severity", "explanation"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Signal identifier"
+              },
+              "delta": {
+                "type": "integer",
+                "description": "Score contribution (positive or negative)"
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+                "description": "Importance level of the signal"
+              },
+              "explanation": {
+                "type": "string",
+                "description": "Human-readable explanation of the signal result"
+              },
+              "evidence": {
+                "type": "object",
+                "description": "Supporting data for the signal evaluation"
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "string",
+          "description": "Any limitations or caveats about the confidence assessment"
+        }
+      }
+    },
+    "context_decision": {
+      "type": "object",
+      "description": "Policy-based decision for the specific workflow context",
+      "required": ["workflow", "decision", "policy_version", "rationale"],
+      "properties": {
+        "workflow": {
+          "type": "string",
+          "description": "Workflow identifier (e.g., 'vendor-bank-change', 'wire-transfer')"
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["ALLOW", "WARN", "REQUIRE_EXTRA_VERIFICATION", "BLOCK"],
+          "description": "Policy decision outcome"
+        },
+        "policy_version": {
+          "type": "string",
+          "description": "Version of the policy used for evaluation"
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Explanation of why this decision was made"
+        },
+        "matched_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "IDs of policy rules that matched"
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "description": "Cryptographic integrity check results",
+      "required": ["payload_hash_ok", "manifest_signature_ok", "event_chain_ok", "transparency_log_ok"],
+      "properties": {
+        "payload_hash_ok": {
+          "type": "boolean",
+          "description": "Whether the payload hash matches the stored/expected hash"
+        },
+        "manifest_signature_ok": {
+          "type": "boolean",
+          "description": "Whether manifest signatures are valid"
+        },
+        "event_chain_ok": {
+          "type": "boolean",
+          "description": "Whether the provenance event chain is unbroken and valid"
+        },
+        "transparency_log_ok": {
+          "type": "boolean",
+          "description": "Whether a valid transparency log proof exists"
+        }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "description": "Key timestamps in RFC3339 format",
+      "required": ["ingested_at", "verified_at"],
+      "properties": {
+        "ingested_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the file was ingested into Verity"
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When verification completed"
+        }
+      }
+    },
+    "ids": {
+      "type": "object",
+      "description": "Identifiers for cross-referencing",
+      "required": ["file_id", "run_id"],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "description": "Unique identifier for the file record"
+        },
+        "run_id": {
+          "type": "string",
+          "description": "Unique identifier for the verification run"
+        }
+      }
+    }
+  }
+}
