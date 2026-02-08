@@ -138,14 +138,14 @@ export default function FilesPage() {
 
               {/* Workflow Filter */}
               <Select
-                value={filters.workflow}
-                onValueChange={(v) => setFilters((f) => ({ ...f, workflow: v }))}
+                value={filters.workflow || "all"}
+                onValueChange={(v) => setFilters((f) => ({ ...f, workflow: v === "all" ? "" : v }))}
               >
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="Workflow" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Workflows</SelectItem>
+                  <SelectItem value="all">All Workflows</SelectItem>
                   {WORKFLOWS.map((w) => (
                     <SelectItem key={w.id} value={w.id}>
                       {w.name}
@@ -156,14 +156,14 @@ export default function FilesPage() {
 
               {/* Decision Filter */}
               <Select
-                value={filters.decision}
-                onValueChange={(v) => setFilters((f) => ({ ...f, decision: v }))}
+                value={filters.decision || "all"}
+                onValueChange={(v) => setFilters((f) => ({ ...f, decision: v === "all" ? "" : v }))}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Decision" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="ALLOW">ALLOW</SelectItem>
                   <SelectItem value="WARN">WARN</SelectItem>
                   <SelectItem value="REQUIRE_EXTRA_VERIFICATION">REQUIRE</SelectItem>
@@ -173,14 +173,14 @@ export default function FilesPage() {
 
               {/* Status Filter */}
               <Select
-                value={filters.status}
-                onValueChange={(v) => setFilters((f) => ({ ...f, status: v }))}
+                value={filters.status || "all"}
+                onValueChange={(v) => setFilters((f) => ({ ...f, status: v === "all" ? "" : v }))}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="QUEUED">Queued</SelectItem>
                   <SelectItem value="PROCESSING">Processing</SelectItem>
                   <SelectItem value="VERIFIED">Verified</SelectItem>
