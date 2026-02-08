@@ -1,0 +1,292 @@
+/**
+ * Verity File Types
+ * Core type definitions for the Verity container format
+ */
+
+// ============================================================================
+// Manifest Types
+// ============================================================================
+
+export interface VerityManifest {
+  /** Schema version for forward compatibility */
+  version: '1.0';
+  /** SHA-256 hash of the payload file */
+  payload_sha256: string;
+  /** MIME type of the payload */
+  payload_mime: string;
+  /** Size of the payload in bytes */
+  payload_size: number;
+  /** RFC3339 timestamp when the container was created */
+  created_at: string;
+  /** Public key (hex) of the capture device that created the original */
+  capture_device_pubkey?: string;
+  /** Key ID for the capture device (short identifier) */
+  capture_device_key_id?: string;
+  /** Certificate chain for trust verification (simplified for POC) */
+  signer_cert_chain?: CertificateInfo[];
+  /** Optional hint about the intended workflow */
+  workflow_hint?: string;
+  /** Original filename (optional metadata) */
+  original_filename?: string;
+}
+
+export interface CertificateInfo {
+  /** Subject name or identifier */
+  subject: string;
+  /** Issuer name or identifier */
+  issuer: string;
+  /** Public key (hex) */
+  public_key: string;
+  /** Key ID (short hex identifier) */
+  key_id: string;
+  /** Valid from (RFC3339) */
+  valid_from: string;
+  /** Valid until (RFC3339) */
+  valid_until: string;
+  /** Whether this is a root certificate */
+  is_root: boolean;
+}
+
+// ============================================================================
+// Event Types (Provenance Chain)
+// ============================================================================
+
+export type EventType =
+  | 'CAPTURE'
+  | 'EDIT'
+  | 'TRANSCODE'
+  | 'AI_EDIT'
+  | 'PUBLISH'
+  | 'SIGN'
+  | 'OTHER';
+
+export interface VerityEvent {
+  /** Unique identifier for this event */
+  event_id: string;
+  /** Type of event in the provenance chain */
+  event_type: EventType;
+  /** RFC3339 timestamp when the event occurred */
+  event_time: string;
+  /** Key ID of the actor who performed this event */
+  actor_key_id: string;
+  /** Public key (hex) of the actor */
+  actor_pubkey: string;
+  /** Hash of the previous event (empty string for first event) */
+  prev_event_hash: string;
+  /** Canonical hash of this event record (computed before signing) */
+  event_hash: string;
+  /** Ed25519 signature of event_hash by actor key (hex) */
+  event_signature: string;
+  /** Optional metadata about the event */
+  metadata?: Record<string, string>;
+}
+
+export interface VerityEvents {
+  /** Array of events in chronological order */
+  events: VerityEvent[];
+}
+
+// ============================================================================
+// Signature Types
+// ============================================================================
+
+export interface VeritySignature {
+  /** Unique identifier for this signature */
+  signature_id: string;
+  /** Key ID of the signer */
+  signer_key_id: string;
+  /** Public key (hex) of the signer */
+  signer_pubkey: string;
+  /** What is being signed */
+  signed_content: 'manifest_and_events';
+  /** SHA-256 hash of canonical(manifest) + canonical(events) */
+  content_hash: string;
+  /** Ed25519 signature (hex) */
+  signature: string;
+  /** RFC3339 timestamp of signing */
+  signed_at: string;
+  /** Algorithm used */
+  algorithm: 'ed25519';
+}
+
+export interface VeritySignatures {
+  /** Array of signatures (can have multiple signers) */
+  signatures: VeritySignature[];
+}
+
+// ============================================================================
+// Transparency Log Proof Types
+// ============================================================================
+
+export interface LogCheckpoint {
+  /** Size of the tree (number of leaves) */
+  tree_size: number;
+  /** Merkle root hash (hex) */
+  root_hash: string;
+  /** RFC3339 timestamp when checkpoint was issued */
+  issued_at: string;
+  /** Ed25519 signature by log key (hex) */
+  signature: string;
+  /** Public key of the log (hex) */
+  log_pubkey: string;
+  /** Key ID of the log */
+  log_key_id: string;
+}
+
+export interface LogInclusionProof {
+  /** Index of the leaf in the log */
+  leaf_index: number;
+  /** Hash of the leaf (should match our computed hash) */
+  leaf_hash: string;
+  /** Merkle inclusion proof (array of hashes in hex) */
+  proof_hashes: string[];
+  /** Tree size at the time of proof */
+  tree_size: number;
+}
+
+export interface VerityLogProof {
+  /** When this proof was obtained */
+  obtained_at: string;
+  /** Log server URL (for reference, not verification) */
+  log_url?: string;
+  /** The signed checkpoint */
+  checkpoint: LogCheckpoint;
+  /** The inclusion proof */
+  inclusion_proof: LogInclusionProof;
+}
+
+// ============================================================================
+// Trust Report Types (Generated by verity-verify)
+// ============================================================================
+
+export type HumanOriginValue = 'YES' | 'NO' | 'UNAVAILABLE';
+export type ContextDecision = 'ALLOW' | 'WARN' | 'REQUIRE_EXTRA_VERIFICATION' | 'BLOCK';
+
+export interface HumanOriginProof {
+  value: HumanOriginValue;
+  reason: string;
+  evidence: {
+    has_capture_event: boolean;
+    capture_key_trusted: boolean;
+    has_ai_edit_event: boolean;
+    event_chain_valid: boolean;
+  };
+}
+
+export interface ConfidenceSignal {
+  name: string;
+  score_delta: number;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  explanation: string;
+  evidence?: Record<string, unknown>;
+}
+
+export interface RealityConfidence {
+  score: number;
+  reasons: ConfidenceSignal[];
+  limitations: string;
+}
+
+export interface ContextPolicyDecision {
+  workflow: string;
+  decision: ContextDecision;
+  policy_version: string;
+  rationale: string;
+  matched_rules: string[];
+}
+
+export interface IntegrityResult {
+  payload_hash_ok: boolean;
+  manifest_signature_ok: boolean;
+  event_chain_ok: boolean;
+  transparency_log_ok: boolean | null;
+  errors: string[];
+}
+
+export interface TrustReport {
+  /** Unique identifier for this report */
+  report_id: string;
+  /** Version of the trust report schema */
+  schema_version: '1.0';
+  /** RFC3339 timestamp when report was generated */
+  generated_at: string;
+  /** SHA-256 hash of the Verity container */
+  container_hash: string;
+  /** Human-origin proof determination */
+  human_origin_proof: HumanOriginProof;
+  /** Reality confidence scoring */
+  reality_confidence: RealityConfidence;
+  /** Context policy evaluation */
+  context_decision: ContextPolicyDecision;
+  /** Cryptographic integrity checks */
+  integrity: IntegrityResult;
+  /** Verity engine version */
+  engine_version: string;
+}
+
+// ============================================================================
+// Key Types
+// ============================================================================
+
+export interface KeyPair {
+  /** Public key (hex) */
+  publicKey: string;
+  /** Private key (hex) */
+  privateKey: string;
+  /** Short key identifier (first 8 chars of public key hash) */
+  keyId: string;
+}
+
+export interface PublicKeyInfo {
+  /** Public key (hex) */
+  publicKey: string;
+  /** Short key identifier */
+  keyId: string;
+}
+
+// ============================================================================
+// Container Types
+// ============================================================================
+
+export interface VerityContainer {
+  /** Raw payload bytes */
+  payload: Buffer;
+  /** Parsed manifest */
+  manifest: VerityManifest;
+  /** Parsed events */
+  events: VerityEvents;
+  /** Parsed signatures */
+  signatures: VeritySignatures;
+  /** Parsed log proof (if present) */
+  logProof?: VerityLogProof;
+  /** Parsed trust report (if present) */
+  trustReport?: TrustReport;
+}
+
+export interface ContainerVerificationResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+  integrity: IntegrityResult;
+}
+
+// ============================================================================
+// Builder Types
+// ============================================================================
+
+export interface ContainerBuilderOptions {
+  /** The payload file content */
+  payload: Buffer;
+  /** MIME type of the payload */
+  mimeType: string;
+  /** Original filename (optional) */
+  originalFilename?: string;
+  /** Workflow hint (optional) */
+  workflowHint?: string;
+}
+
+export interface EventBuilderOptions {
+  eventType: EventType;
+  actorKeyPair: KeyPair;
+  metadata?: Record<string, string>;
+}

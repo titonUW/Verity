@@ -1,0 +1,10 @@
+This is a placeholder for a sample image file.
+In a real scenario, this would be a JPEG, PNG, or other image format.
+For the demo, we use a text file to avoid binary file handling complexity.
+
+[Simulated Image Metadata]
+Format: JPEG
+Dimensions: 1920x1080
+Camera: Simulated Capture Device
+Date Taken: 2024-01-15T10:30:00Z
+Location: Not recorded (privacy)

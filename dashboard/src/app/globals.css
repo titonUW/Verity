@@ -1,0 +1,323 @@
+@import "tailwindcss";
+
+/* Verity Design System Tokens */
+:root {
+  /* Primary Colors */
+  --verity-blue-primary: #005CCE;
+  --verity-blue-secondary: #0088CF;
+  --verity-teal-accent: #05B8BC;
+
+  /* Neutrals */
+  --verity-white: #FFFFFF;
+  --verity-gray-50: #F8FAFC;
+  --verity-gray-100: #F1F5F9;
+  --verity-gray-200: #E2E8F0;
+  --verity-gray-300: #CBD5E1;
+  --verity-gray-400: #94A3B8;
+  --verity-gray-500: #64748B;
+  --verity-gray-600: #475569;
+  --verity-gray-700: #334155;
+  --verity-gray-800: #1E293B;
+  --verity-gray-900: #0F172A;
+  --verity-gray-950: #020617;
+
+  /* Status Colors */
+  --verity-success: #10B981;
+  --verity-warning: #F59E0B;
+  --verity-error: #EF4444;
+  --verity-info: #3B82F6;
+
+  /* Decision Colors */
+  --verity-allow: #10B981;
+  --verity-warn: #F59E0B;
+  --verity-require: #3B82F6;
+  --verity-block: #EF4444;
+
+  /* Confidence Grade Colors */
+  --verity-grade-a: #10B981;
+  --verity-grade-b: #22C55E;
+  --verity-grade-c: #F59E0B;
+  --verity-grade-d: #F97316;
+  --verity-grade-f: #EF4444;
+
+  /* Surfaces - Dark Theme */
+  --background: var(--verity-gray-950);
+  --background-secondary: var(--verity-gray-900);
+  --background-card: var(--verity-gray-800);
+  --background-elevated: var(--verity-gray-700);
+  --foreground: var(--verity-gray-50);
+  --foreground-muted: var(--verity-gray-400);
+  --border: var(--verity-gray-700);
+  --border-muted: var(--verity-gray-800);
+
+  /* Typography */
+  --font-sans: "Calibri", "Segoe UI", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "Consolas", "Monaco", "Courier New", monospace;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-glow: 0 0 20px rgba(5, 184, 188, 0.15);
+}
+
+/* Tailwind Theme Integration */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--verity-blue-primary);
+  --color-secondary: var(--verity-blue-secondary);
+  --color-accent: var(--verity-teal-accent);
+  --color-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-card: var(--background-card);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Angular gradient overlay effect (Verity brand) */
+.verity-gradient-bg {
+  background: linear-gradient(135deg, var(--verity-gray-950) 0%, var(--verity-gray-900) 50%, var(--verity-gray-950) 100%);
+  position: relative;
+}
+
+.verity-gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(180deg, rgba(0, 92, 206, 0.08) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Card styles */
+.verity-card {
+  background: var(--background-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+}
+
+.verity-card-elevated {
+  background: linear-gradient(145deg, var(--background-card) 0%, var(--background-elevated) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Accent underline for headings */
+.verity-heading {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+}
+
+.verity-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem;
+  height: 3px;
+  background: var(--verity-teal-accent);
+  border-radius: 2px;
+}
+
+/* Status badges */
+.badge-allow {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--verity-allow);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--verity-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-require {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--verity-require);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-block {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--verity-block);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Grade badges */
+.grade-a { color: var(--verity-grade-a); }
+.grade-b { color: var(--verity-grade-b); }
+.grade-c { color: var(--verity-grade-c); }
+.grade-d { color: var(--verity-grade-d); }
+.grade-f { color: var(--verity-grade-f); }
+
+/* Button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--verity-blue-primary) 0%, var(--verity-blue-secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 92, 206, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--verity-teal-accent);
+  border: 1px solid var(--verity-teal-accent);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(5, 184, 188, 0.1);
+}
+
+/* Input styles */
+input, select, textarea {
+  background: var(--background-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--verity-teal-accent);
+  box-shadow: 0 0 0 2px rgba(5, 184, 188, 0.2);
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground-muted);
+  font-weight: 500;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-muted);
+}
+
+tr:hover td {
+  background: var(--background-secondary);
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--verity-gray-600);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--verity-gray-500);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5, 184, 188, 0.4); }
+  50% { box-shadow: 0 0 20px 5px rgba(5, 184, 188, 0.2); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Utility classes */
+.text-gradient {
+  background: linear-gradient(135deg, var(--verity-blue-primary) 0%, var(--verity-teal-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.border-gradient {
+  border: 1px solid transparent;
+  background: linear-gradient(var(--background-card), var(--background-card)) padding-box,
+              linear-gradient(135deg, var(--verity-blue-primary), var(--verity-teal-accent)) border-box;
+}

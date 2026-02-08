@@ -1,0 +1,64 @@
+# Verity Context Policy: Insurance Claim Evidence Intake
+#
+# High-scrutiny workflow for accepting evidence documents in insurance claims.
+# Must detect potential fraud while not blocking legitimate claims.
+
+workflow_name: insurance-evidence
+description: |
+  Policy for insurance claim evidence intake.
+  Balances fraud prevention with legitimate claim processing.
+  Evidence documents (photos, videos, documents) require authenticity verification.
+version: "1.0"
+
+# Balanced requirements
+min_confidence: 50
+require_human_origin: false  # Some legitimate evidence may be scanned/digitized
+require_transparency_log: false  # Not always possible for immediate submissions
+
+decision_rules:
+  # Hard failures
+  - id: integrity_compromised
+    condition: "!integrity_ok"
+    decision: BLOCK
+    rationale: "Evidence integrity check failed - file may have been manipulated"
+
+  # AI content warnings
+  - id: ai_generated_evidence
+    condition: "human_origin == NO"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Evidence flagged as AI-generated - requires Special Investigation Unit (SIU) review"
+
+  # Confidence-based decisions
+  - id: highly_suspicious
+    condition: "confidence < 30"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Very low confidence - escalate to fraud investigation team"
+
+  - id: suspicious
+    condition: "confidence < 50"
+    decision: WARN
+    rationale: "Low confidence score - flag for claims adjuster review"
+
+  # Log present but invalid
+  - id: log_manipulation
+    condition: "has_log AND log_ok == false"
+    decision: REQUIRE_EXTRA_VERIFICATION
+    rationale: "Transparency log proof invalid - possible backdating attempt"
+
+  # High confidence with log
+  - id: verified_with_log
+    condition: "has_log AND log_ok AND confidence >= 70"
+    decision: ALLOW
+    rationale: "Evidence verified with high confidence and audit trail"
+
+  # Standard acceptance
+  - id: standard_intake
+    condition: "confidence >= 50"
+    decision: ALLOW
+    rationale: "Evidence meets minimum verification requirements for intake"
+
+  # Fallback warning
+  - id: marginal_acceptance
+    condition: "default"
+    decision: WARN
+    rationale: "Evidence accepted with reservations - recommend additional documentation"

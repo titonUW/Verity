@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bgGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0f1a"/>
+      <stop offset="100%" style="stop-color:#111827"/>
+    </linearGradient>
+    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="40%" style="stop-color:#eab308"/>
+      <stop offset="70%" style="stop-color:#22c55e"/>
+      <stop offset="100%" style="stop-color:#05B8BC"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bgGrad3)"/>
+
+  <!-- Title -->
+  <text x="600" y="45" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="26" font-weight="bold">Reality Confidence Scoring Engine</text>
+  <text x="600" y="75" text-anchor="middle" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="14">10 Deterministic Signals for Trust Assessment</text>
+
+  <!-- Score Display -->
+  <g transform="translate(800, 100)">
+    <rect x="0" y="0" width="350" height="180" rx="16" fill="#1f2937" stroke="#05B8BC" stroke-width="2"/>
+    <text x="175" y="40" text-anchor="middle" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="12">REALITY CONFIDENCE SCORE</text>
+
+    <text x="175" y="100" text-anchor="middle" fill="#05B8BC" font-family="system-ui, sans-serif" font-size="64" font-weight="bold">87</text>
+    <text x="240" y="100" fill="#6b7280" font-family="system-ui, sans-serif" font-size="24">/ 100</text>
+
+    <!-- Grade -->
+    <rect x="125" y="120" width="100" height="40" rx="8" fill="#05B8BC"/>
+    <text x="175" y="148" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="20" font-weight="bold">Grade: A</text>
+  </g>
+
+  <!-- Signal List -->
+  <g transform="translate(50, 120)">
+    <text x="0" y="0" fill="#ffffff" font-family="system-ui, sans-serif" font-size="18" font-weight="bold">Verification Signals</text>
+
+    <!-- Signal 1 -->
+    <g transform="translate(0, 30)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">payload_hash_match</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">SHA-256 hash verified against declared value</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+20 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d0d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10">CRITICAL</text>
+    </g>
+
+    <!-- Signal 2 -->
+    <g transform="translate(0, 90)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">capture_event_present</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">Original capture event found in provenance chain</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+15 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d2d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#f97316" font-family="system-ui, sans-serif" font-size="10">HIGH</text>
+    </g>
+
+    <!-- Signal 3 -->
+    <g transform="translate(0, 150)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">event_chain_continuity</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">All provenance events properly linked</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+15 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d0d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10">CRITICAL</text>
+    </g>
+
+    <!-- Signal 4 -->
+    <g transform="translate(0, 210)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">signature_validity</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">All signatures verified against trusted keys</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+15 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d0d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#ef4444" font-family="system-ui, sans-serif" font-size="10">CRITICAL</text>
+    </g>
+
+    <!-- Signal 5 -->
+    <g transform="translate(0, 270)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">transparency_log_proof</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">Merkle inclusion proof verified in public log</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+10 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d2d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#f97316" font-family="system-ui, sans-serif" font-size="10">HIGH</text>
+    </g>
+
+    <!-- Signal 6 -->
+    <g transform="translate(0, 330)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">timestamp_sanity</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">Event timestamps in chronological order, no future dates</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+10 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d3d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#eab308" font-family="system-ui, sans-serif" font-size="10">MEDIUM</text>
+    </g>
+
+    <!-- Signal 7 -->
+    <g transform="translate(0, 390)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">trusted_capture_device</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">Capture device in trusted hardware registry</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+10 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d2d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#f97316" font-family="system-ui, sans-serif" font-size="10">HIGH</text>
+    </g>
+
+    <!-- Signal 8 -->
+    <g transform="translate(0, 450)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#eab308"/>
+      <text x="25" y="30" text-anchor="middle" fill="#1f2937" font-family="system-ui, sans-serif" font-size="12">!</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">ai_edit_detection</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">AI modification detected in provenance chain</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#3d2d0d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#f97316" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">-8 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#3d3d0d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#eab308" font-family="system-ui, sans-serif" font-size="10">MEDIUM</text>
+    </g>
+
+    <!-- Signal 9 -->
+    <g transform="translate(0, 510)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">mime_type_recognized</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">File type matches expected format</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+5 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="10">LOW</text>
+    </g>
+
+    <!-- Signal 10 -->
+    <g transform="translate(0, 570)">
+      <rect x="0" y="0" width="700" height="50" rx="8" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+      <circle cx="25" cy="25" r="12" fill="#22c55e"/>
+      <text x="25" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12">✓</text>
+      <text x="50" y="22" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="13" font-weight="500">file_size_reasonable</text>
+      <text x="50" y="38" fill="#6b7280" font-family="system-ui, sans-serif" font-size="10">File size within expected bounds for type</text>
+      <rect x="500" y="15" width="120" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="560" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">+5 pts</text>
+      <rect x="630" y="15" width="60" height="20" rx="4" fill="#0d3d2d"/>
+      <text x="660" y="29" text-anchor="middle" fill="#22c55e" font-family="system-ui, sans-serif" font-size="10">LOW</text>
+    </g>
+  </g>
+
+  <!-- Scoring Summary -->
+  <g transform="translate(800, 310)">
+    <rect x="0" y="0" width="350" height="310" rx="12" fill="#1f2937" stroke="#374151" stroke-width="1"/>
+    <text x="175" y="30" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="bold">Score Calculation</text>
+
+    <text x="20" y="60" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="11">Base Score</text>
+    <text x="310" y="60" text-anchor="end" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="11">50 pts</text>
+
+    <text x="20" y="85" fill="#22c55e" font-family="system-ui, sans-serif" font-size="11">+ Positive signals (9)</text>
+    <text x="310" y="85" text-anchor="end" fill="#22c55e" font-family="system-ui, sans-serif" font-size="11">+105 pts</text>
+
+    <text x="20" y="110" fill="#f97316" font-family="system-ui, sans-serif" font-size="11">- Negative signals (1)</text>
+    <text x="310" y="110" text-anchor="end" fill="#f97316" font-family="system-ui, sans-serif" font-size="11">-8 pts</text>
+
+    <line x1="20" y1="125" x2="330" y2="125" stroke="#374151" stroke-width="1"/>
+
+    <text x="20" y="150" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">Raw Total</text>
+    <text x="310" y="150" text-anchor="end" fill="#ffffff" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">147 pts</text>
+
+    <text x="20" y="175" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="11">Normalized (0-100)</text>
+    <text x="310" y="175" text-anchor="end" fill="#05B8BC" font-family="system-ui, sans-serif" font-size="13" font-weight="bold">87</text>
+
+    <!-- Grade Scale -->
+    <text x="175" y="210" text-anchor="middle" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="11">GRADE SCALE</text>
+
+    <g transform="translate(20, 225)">
+      <rect x="0" y="0" width="60" height="25" rx="4" fill="#05B8BC"/>
+      <text x="30" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">A: 90+</text>
+    </g>
+    <g transform="translate(70, 225)">
+      <rect x="0" y="0" width="60" height="25" rx="4" fill="#22c55e"/>
+      <text x="30" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">B: 80+</text>
+    </g>
+    <g transform="translate(140, 225)">
+      <rect x="0" y="0" width="60" height="25" rx="4" fill="#eab308"/>
+      <text x="30" y="17" text-anchor="middle" fill="#1f2937" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">C: 60+</text>
+    </g>
+    <g transform="translate(210, 225)">
+      <rect x="0" y="0" width="60" height="25" rx="4" fill="#f97316"/>
+      <text x="30" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">D: 40+</text>
+    </g>
+    <g transform="translate(280, 225)">
+      <rect x="0" y="0" width="50" height="25" rx="4" fill="#ef4444"/>
+      <text x="25" y="17" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="bold">F: &lt;40</text>
+    </g>
+
+    <!-- Current Grade Indicator -->
+    <g transform="translate(20, 265)">
+      <rect x="0" y="0" width="310" height="30" rx="6" fill="#1e3a5f" stroke="#05B8BC" stroke-width="1"/>
+      <text x="155" y="20" text-anchor="middle" fill="#05B8BC" font-family="system-ui, sans-serif" font-size="12" font-weight="bold">Current: Grade A (87 pts) - Highly Trusted</text>
+    </g>
+  </g>
+
+  <!-- Footer -->
+  <text x="600" y="780" text-anchor="middle" fill="#4b5563" font-family="system-ui, sans-serif" font-size="11">Verity Trust Infrastructure - Deterministic Confidence Assessment</text>
+</svg>
