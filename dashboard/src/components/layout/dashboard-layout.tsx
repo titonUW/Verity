@@ -12,10 +12,13 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, title, description }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen bg-[var(--background)]">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-[var(--verity-blue-primary)] focus:text-white">
+        Skip to content
+      </a>
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header title={title} description={description} />
-        <main className="flex-1 overflow-auto p-6">
+        <main id="main-content" role="main" className="flex-1 overflow-auto p-6">
           {children}
         </main>
       </div>

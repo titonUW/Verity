@@ -205,7 +205,7 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 }
 
-// Simple user model for POC
+// Simple user model for POC with RBAC
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -213,4 +213,45 @@ model User {
   role      String   @default("VIEWER") // ADMIN, ANALYST, VIEWER
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Oversight Agent - periodic digests and reports
+model AgentReport {
+  id             String   @id @default(cuid())
+  reportType     String   // DAILY_DIGEST, WEEKLY_SUMMARY, AD_HOC
+  severity       String   // INFO, WARNING, CRITICAL
+  title          String
+  summary        String
+  detailsJson    String   @default("{}") // Full structured report
+  eventCount     Int      @default(0)
+  periodStart    DateTime
+  periodEnd      DateTime
+  generatedBy    String   @default("heuristic") // "heuristic" or "llm:<model>"
+  promptTemplate String?  // Template used if LLM mode
+  tokenCount     Int?     // Tokens used if LLM mode
+  createdAt      DateTime @default(now())
+
+  @@index([reportType])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+// Oversight Agent - real-time alerts for high severity conditions
+model AgentAlert {
+  id             String    @id @default(cuid())
+  alertType      String    // BLOCK_SPIKE, LOW_CONFIDENCE, CHAIN_BREAK, VERIFICATION_FAILURE, etc.
+  severity       String    // WARNING, CRITICAL
+  title          String
+  message        String
+  entityType     String?   // Related entity type (FILE, POLICY, etc.)
+  entityId       String?   // Related entity ID
+  acknowledged   Boolean   @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([acknowledged])
+  @@index([createdAt])
 }
