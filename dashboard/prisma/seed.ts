@@ -348,6 +348,43 @@ async function seed() {
   console.log(`   - ${blockedCount} BLOCKED`);
   console.log(`   - ${warnCount} WARN`);
   console.log(`   - ${SAMPLE_FILES.length - blockedCount - warnCount} ALLOW/REQUIRE`);
+
+  // Create users for RBAC
+  console.log("Creating users...");
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@verity.local" },
+    update: {},
+    create: { email: "admin@verity.local", name: "Admin User", role: "ADMIN" },
+  });
+  await prisma.user.upsert({
+    where: { email: "analyst@verity.local" },
+    update: {},
+    create: { email: "analyst@verity.local", name: "Analyst User", role: "ANALYST" },
+  });
+  await prisma.user.upsert({
+    where: { email: "viewer@verity.local" },
+    update: {},
+    create: { email: "viewer@verity.local", name: "Viewer User", role: "VIEWER" },
+  });
+  console.log("✅ Created 3 users (ADMIN, ANALYST, VIEWER)");
+
+  // Run the oversight agent to generate an initial report
+  console.log("Running oversight agent for initial report...");
+  const { runOversightAgent, DEFAULT_AGENT_CONFIG } = await import("../src/lib/agent");
+  try {
+    const result = await runOversightAgent(prisma, DEFAULT_AGENT_CONFIG);
+    console.log(`✅ Agent report created (${result.alertIds.length} alerts)`);
+  } catch (e) {
+    console.log(`⚠ Agent run skipped: ${e}`);
+  }
+
+  // Set default admin session hint
+  await prisma.systemSetting.upsert({
+    where: { key: "default_admin_id" },
+    update: { value: adminUser.id },
+    create: { key: "default_admin_id", value: adminUser.id },
+  });
+
   console.log("🌱 Seeding complete!");
 }
 
