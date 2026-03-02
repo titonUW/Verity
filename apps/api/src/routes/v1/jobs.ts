@@ -5,9 +5,19 @@
  */
 
 import { FastifyPluginAsync } from 'fastify';
+import { MultipartValue } from '@fastify/multipart';
 import { v4 as uuidv4 } from 'uuid';
 import { Queue } from 'bullmq';
 import { getConfig } from '../../config.js';
+
+// Helper to extract string value from multipart field
+function getFieldValue(field: unknown): string | undefined {
+  if (!field) return undefined;
+  if (typeof field === 'object' && 'value' in (field as any)) {
+    return (field as MultipartValue<string>).value;
+  }
+  return undefined;
+}
 
 export const v1JobsRoutes: FastifyPluginAsync = async (fastify) => {
   const config = getConfig();
@@ -58,10 +68,10 @@ export const v1JobsRoutes: FastifyPluginAsync = async (fastify) => {
     else if (data.mimetype.startsWith('text/')) mediaType = 'TEXT';
 
     // Parse options
-    const only = data.fields.only?.value?.split(',').filter(Boolean);
-    const excluding = data.fields.excluding?.value?.split(',').filter(Boolean);
-    const externalId = data.fields.external_id?.value;
-    const webhookUrl = data.fields.webhook_url?.value;
+    const only = getFieldValue(data.fields.only)?.split(',').filter(Boolean);
+    const excluding = getFieldValue(data.fields.excluding)?.split(',').filter(Boolean);
+    const externalId = getFieldValue(data.fields.external_id);
+    const webhookUrl = getFieldValue(data.fields.webhook_url);
 
     // Calculate hash
     const crypto = await import('crypto');

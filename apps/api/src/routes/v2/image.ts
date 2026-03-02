@@ -5,7 +5,17 @@
  */
 
 import { FastifyPluginAsync } from 'fastify';
+import { MultipartValue } from '@fastify/multipart';
 import { v4 as uuidv4 } from 'uuid';
+
+// Helper to extract string value from multipart field
+function getFieldValue(field: unknown): string | undefined {
+  if (!field) return undefined;
+  if (typeof field === 'object' && 'value' in (field as any)) {
+    return (field as MultipartValue<string>).value;
+  }
+  return undefined;
+}
 
 export const v2ImageRoutes: FastifyPluginAsync = async (fastify) => {
   // Authenticate all routes
@@ -74,9 +84,9 @@ export const v2ImageRoutes: FastifyPluginAsync = async (fastify) => {
     const id = uuidv4();
 
     // Parse options
-    const only = data.fields.only?.value?.split(',').filter(Boolean);
-    const excluding = data.fields.excluding?.value?.split(',').filter(Boolean);
-    const externalId = data.fields.external_id?.value;
+    const only = getFieldValue(data.fields.only)?.split(',').filter(Boolean);
+    const excluding = getFieldValue(data.fields.excluding)?.split(',').filter(Boolean);
+    const externalId = getFieldValue(data.fields.external_id);
 
     // Call inference service
     const result = await fastify.inference.detectImage(

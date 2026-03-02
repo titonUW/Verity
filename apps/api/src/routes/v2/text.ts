@@ -76,7 +76,8 @@ export const v2TextRoutes: FastifyPluginAsync = async (fastify) => {
     const aiTextSignal = result.signals.find(s => s.name === 'ai_text');
 
     // Transform annotations
-    const annotations = (aiTextSignal?.metadata?.annotations || []).map((a: any) => ({
+    const rawAnnotations = (aiTextSignal?.metadata as any)?.annotations || [];
+    const annotations = rawAnnotations.map((a: any) => ({
       start: a.start,
       end: a.end,
       ai: a.ai || a.verdict === 'ai',

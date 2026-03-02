@@ -6,7 +6,7 @@
 
 import { Worker, Job } from 'bullmq';
 import { PrismaClient } from '@prisma/client';
-import Redis from 'ioredis';
+import { Redis } from 'ioredis';
 import { request, FormData, File } from 'undici';
 import { getConfig } from './config.js';
 
