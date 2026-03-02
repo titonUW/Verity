@@ -1,0 +1,135 @@
+version: "3.9"
+
+services:
+  # ==========================================================================
+  # Databases
+  # ==========================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: verity-postgres
+    environment:
+      POSTGRES_USER: verity
+      POSTGRES_PASSWORD: verity_dev_password
+      POSTGRES_DB: verity
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U verity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: verity-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # Application Services
+  # ==========================================================================
+  api:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.api
+    container_name: verity-api
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://verity:verity_dev_password@postgres:5432/verity
+      REDIS_URL: redis://redis:6379
+      INFERENCE_URL: http://inference:8000
+      JWT_SECRET: dev_jwt_secret_change_in_production
+      API_KEY_SALT: dev_salt_change_in_production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/api/src:/app/apps/api/src:ro
+      - ./packages:/app/packages:ro
+    command: npm run dev:api
+
+  inference:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.inference
+    container_name: verity-inference
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      LOG_LEVEL: debug
+      # Model configuration
+      ENABLE_GPU: "false"
+      MODEL_CACHE_DIR: /app/models
+      # Feature flags
+      ENABLE_NSFW_DETECTION: "true"
+      ENABLE_DEEPFAKE_DETECTION: "false"  # Requires weights
+    volumes:
+      - ./services/inference/verity_inference:/app/verity_inference:ro
+      - model_cache:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.web
+    container_name: verity-web
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      - api
+    volumes:
+      - ./apps/web/src:/app/apps/web/src:ro
+    command: npm run dev:web
+
+  # ==========================================================================
+  # Background Workers
+  # ==========================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.api
+    container_name: verity-worker
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://verity:verity_dev_password@postgres:5432/verity
+      REDIS_URL: redis://redis:6379
+      INFERENCE_URL: http://inference:8000
+      WORKER_MODE: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      inference:
+        condition: service_healthy
+    command: npm run worker -w @verity/api
+
+volumes:
+  postgres_data:
+  redis_data:
+  model_cache:
+
+networks:
+  default:
+    name: verity-network

@@ -1,20 +1,37 @@
 {
   "name": "verity",
-  "version": "0.1.0",
-  "description": "Trust infrastructure for digital content - Verifies reality before decisions are made",
+  "version": "1.0.0",
+  "description": "AI Content Authenticity Platform - Detect AI-generated content and verify provenance",
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build -w @verity/core -w @verity/file -w @verity/log -w @verity/verify",
+    "build:api": "npm run build -w @verity/api",
+    "build:web": "npm run build -w @verity/web",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:api": "npm run dev -w @verity/api",
+    "dev:web": "npm run dev -w @verity/web",
+    "dev:inference": "cd services/inference && uvicorn verity_inference.main:app --reload --port 8000",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint packages/*/src/**/*.ts",
-    "format": "prettier --write \"packages/*/src/**/*.ts\"",
+    "test:api": "npm run test -w @verity/api",
+    "test:inference": "cd services/inference && pytest",
+    "lint": "eslint packages/*/src/**/*.ts apps/*/src/**/*.ts",
+    "format": "prettier --write \"packages/*/src/**/*.ts\" \"apps/*/src/**/*.ts\"",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build",
     "demo": "npm run build && node scripts/demo.mjs",
-    "clean": "rm -rf packages/*/dist"
+    "clean": "rm -rf packages/*/dist apps/*/dist"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.8",
@@ -26,8 +43,13 @@
     "@types/yazl": "^2.4.5",
     "eslint": "^8.55.0",
     "prettier": "^3.1.0",
+    "prisma": "^5.8.0",
     "typescript": "^5.3.2",
     "vitest": "^1.0.4"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.0",
+    "zod": "^3.22.4"
   },
   "engines": {
     "node": ">=20.0.0"

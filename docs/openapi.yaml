@@ -1,437 +1,277 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: Verity API
   description: |
-    Trust infrastructure for digital content.
+    AI Content Authenticity Detection API.
 
-    This API specification covers both the Transparency Log service and the Verify service.
+    Verity provides multi-signal detection for AI-generated content across all media types,
+    combined with cryptographic provenance verification.
 
-    ## Transparency Log Service
-    Provides Certificate Transparency-style append-only Merkle log with signed checkpoints.
+    ## Authentication
+    All endpoints require Bearer token authentication with an API key.
 
-    ## Verify Service
-    Produces Trust Reports with human origin determination, confidence scoring, and policy evaluation.
+    ## Rate Limits
+    Rate limits are enforced per API key based on the key's tier.
   version: 1.0.0
   contact:
-    name: Verity Team
-    email: contact@verity.ai
-    url: https://verity.ai
-  license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    email: api@verity.ai
 
 servers:
-  - url: http://localhost:3001
-    description: Local Transparency Log service
-  - url: http://localhost:3002
-    description: Local Verify service
+  - url: http://localhost:3000
+    description: Development
+  - url: https://api.verity.ai
+    description: Production
+
+security:
+  - bearerAuth: []
 
 tags:
-  - name: Log
-    description: Transparency Log operations
-  - name: Verify
-    description: Verification operations
+  - name: detection
+    description: AI content detection endpoints
+  - name: jobs
+    description: Async job management
+  - name: keys
+    description: API key management
+  - name: compat
+    description: AIorNot-compatible endpoints
+  - name: system
+    description: System health and info
 
 paths:
-  # ============================================================================
-  # Transparency Log Endpoints
-  # ============================================================================
-  /health:
-    get:
-      tags: [Log, Verify]
-      summary: Health check
-      operationId: healthCheck
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  service:
-                    type: string
-                    example: verity-log
-
-  /entries:
+  /api/v1/detect/image:
     post:
-      tags: [Log]
-      summary: Add entry to log
-      description: Adds a leaf hash to the transparency log
-      operationId: addEntry
+      tags: [detection]
+      summary: Detect AI in image
+      operationId: detectImage
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/AddEntryRequest'
-      responses:
-        '201':
-          description: Entry added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddEntryResponse'
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /checkpoint:
-    get:
-      tags: [Log]
-      summary: Get current checkpoint
-      description: Returns the current signed checkpoint of the log
-      operationId: getCheckpoint
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                only:
+                  type: string
+                  description: Comma-separated list of detectors to run
+                excluding:
+                  type: string
+                  description: Comma-separated list of detectors to exclude
+                external_id:
+                  type: string
+                  description: Your tracking ID
       responses:
         '200':
-          description: Current checkpoint
+          description: Detection result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetCheckpointResponse'
+                $ref: '#/components/schemas/DetectionResponse'
 
-  /proof/{index}:
-    get:
-      tags: [Log]
-      summary: Get inclusion proof
-      description: Returns Merkle inclusion proof for an entry
-      operationId: getProof
-      parameters:
-        - name: index
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-          description: Entry index
-      responses:
-        '200':
-          description: Inclusion proof
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetProofResponse'
-        '404':
-          description: Entry not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /entry/{index}:
-    get:
-      tags: [Log]
-      summary: Get entry data
-      description: Returns entry metadata by index
-      operationId: getEntry
-      parameters:
-        - name: index
-          in: path
-          required: true
-          schema:
-            type: integer
-            minimum: 0
-          description: Entry index
-      responses:
-        '200':
-          description: Entry data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetEntryResponse'
-        '404':
-          description: Entry not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /size:
-    get:
-      tags: [Log]
-      summary: Get tree size
-      description: Returns current number of entries in the log
-      operationId: getTreeSize
-      responses:
-        '200':
-          description: Tree size
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  tree_size:
-                    type: integer
-                    minimum: 0
-
-  # ============================================================================
-  # Verify Endpoints
-  # ============================================================================
-  /verify:
+  /api/v1/detect/text:
     post:
-      tags: [Verify]
-      summary: Verify container
-      description: Verifies a Verity container and generates a Trust Report
-      operationId: verifyContainer
+      tags: [detection]
+      summary: Detect AI-generated text
+      operationId: detectText
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - container_base64
+              required: [text]
               properties:
-                container_base64:
+                text:
                   type: string
-                  format: byte
-                  description: Base64-encoded Verity container
-                workflow:
+                  minLength: 1
+                include_annotations:
+                  type: boolean
+                  default: false
+                external_id:
                   type: string
-                  description: Workflow name for policy evaluation
       responses:
         '200':
-          description: Verification result
+          description: Detection result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetectionResponse'
+
+  /api/v1/jobs:
+    post:
+      tags: [jobs]
+      summary: Create async detection job
+      operationId: createJob
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                webhook_url:
+                  type: string
+                  format: uri
+      responses:
+        '202':
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCreated'
+
+  /api/v1/jobs/{id}:
+    get:
+      tags: [jobs]
+      summary: Get job status and results
+      operationId: getJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+
+  /v2/image/sync:
+    post:
+      tags: [compat]
+      summary: AIorNot-compatible image detection
+      operationId: compatImageSync
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Detection result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompatImageResponse'
+
+  /v1/system/live:
+    get:
+      tags: [system]
+      summary: System live check
+      operationId: systemLive
+      security: []
+      responses:
+        '200':
+          description: System is live
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  trust_report:
-                    $ref: '#/components/schemas/TrustReport'
-        '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                  is_live:
+                    type: boolean
+
+  /healthz:
+    get:
+      tags: [system]
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
   schemas:
-    Error:
+    DetectionResponse:
       type: object
       properties:
-        error:
-          type: string
-          description: Error message
-
-    AddEntryRequest:
-      type: object
-      required:
-        - leaf_hash
-      properties:
-        leaf_hash:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: SHA-256 hash to add (hex)
-        content_hash:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Optional content hash for reference
-
-    AddEntryResponse:
-      type: object
-      properties:
-        leaf_index:
-          type: integer
-          description: Index of the added entry
-        leaf_hash:
-          type: string
-          description: Hash of the leaf (with domain separation)
-        checkpoint:
-          $ref: '#/components/schemas/LogCheckpoint'
-
-    GetCheckpointResponse:
-      type: object
-      properties:
-        checkpoint:
-          $ref: '#/components/schemas/LogCheckpoint'
-
-    GetProofResponse:
-      type: object
-      properties:
-        inclusion_proof:
-          $ref: '#/components/schemas/LogInclusionProof'
-        checkpoint:
-          $ref: '#/components/schemas/LogCheckpoint'
-
-    GetEntryResponse:
-      type: object
-      properties:
-        entry:
-          $ref: '#/components/schemas/LogEntry'
-
-    LogCheckpoint:
-      type: object
-      description: Signed checkpoint of the log tree
-      properties:
-        tree_size:
-          type: integer
-          minimum: 0
-          description: Number of leaves in the tree
-        root_hash:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Merkle root hash (hex)
-        issued_at:
-          type: string
-          format: date-time
-          description: When the checkpoint was created
-        signature:
-          type: string
-          description: Ed25519 signature (hex)
-        log_pubkey:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Log's public key (hex)
-        log_key_id:
-          type: string
-          description: Log's key identifier
-
-    LogInclusionProof:
-      type: object
-      description: Merkle inclusion proof for a leaf
-      properties:
-        leaf_index:
-          type: integer
-          minimum: 0
-          description: Index of the leaf
-        leaf_hash:
-          type: string
-          pattern: ^[a-f0-9]{64}$
-          description: Hash of the leaf
-        proof_hashes:
-          type: array
-          items:
-            type: string
-            pattern: ^[a-f0-9]{64}$
-          description: Merkle proof hashes
-        tree_size:
-          type: integer
-          minimum: 1
-          description: Tree size at time of proof
-
-    LogEntry:
-      type: object
-      description: Log entry metadata
-      properties:
-        index:
-          type: integer
-          minimum: 0
-          description: Entry index
-        leaf_hash:
-          type: string
-          description: Leaf hash
-        content_hash:
-          type: string
-          description: Original content hash (if provided)
-        added_at:
-          type: string
-          format: date-time
-          description: When entry was added
-
-    TrustReport:
-      type: object
-      description: Complete Trust Report
-      properties:
-        report_id:
+        request_id:
           type: string
           format: uuid
-        schema_version:
-          type: string
-          enum: ["1.0"]
-        generated_at:
+        timestamp:
           type: string
           format: date-time
-        container_hash:
+        media_type:
           type: string
-        human_origin_proof:
-          $ref: '#/components/schemas/HumanOriginProof'
-        reality_confidence:
-          $ref: '#/components/schemas/RealityConfidence'
-        context_decision:
-          $ref: '#/components/schemas/ContextDecision'
-        integrity:
-          $ref: '#/components/schemas/IntegrityResult'
-        engine_version:
+          enum: [image, video, audio, text]
+        verdict:
           type: string
-
-    HumanOriginProof:
-      type: object
-      properties:
-        value:
-          type: string
-          enum: [YES, NO, UNAVAILABLE]
-        reason:
-          type: string
-        evidence:
-          type: object
-
-    RealityConfidence:
-      type: object
-      properties:
-        score:
-          type: integer
-          minimum: 0
-          maximum: 100
-        reasons:
+          enum: [ai, human, uncertain, unavailable]
+        confidence:
+          type: number
+        signals:
           type: array
           items:
-            $ref: '#/components/schemas/ConfidenceSignal'
-        limitations:
-          type: string
+            $ref: '#/components/schemas/SignalResult'
 
-    ConfidenceSignal:
+    SignalResult:
       type: object
       properties:
         name:
           type: string
-        score_delta:
-          type: integer
-        severity:
+        verdict:
           type: string
-          enum: [critical, high, medium, low, info]
-        explanation:
+        confidence:
+          type: number
+        model_version:
           type: string
-        evidence:
+
+    JobCreated:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+
+    JobResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        result:
+          $ref: '#/components/schemas/DetectionResponse'
+
+    CompatImageResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        report:
           type: object
-
-    ContextDecision:
-      type: object
-      properties:
-        workflow:
-          type: string
-        decision:
-          type: string
-          enum: [ALLOW, WARN, REQUIRE_EXTRA_VERIFICATION, BLOCK]
-        policy_version:
-          type: string
-        rationale:
-          type: string
-        matched_rules:
-          type: array
-          items:
-            type: string
-
-    IntegrityResult:
-      type: object
-      properties:
-        payload_hash_ok:
-          type: boolean
-        manifest_signature_ok:
-          type: boolean
-        event_chain_ok:
-          type: boolean
-        transparency_log_ok:
-          type: boolean
-          nullable: true
-        errors:
-          type: array
-          items:
-            type: string
+          properties:
+            verdict:
+              type: string
+            ai:
+              type: object
+              properties:
+                is_detected:
+                  type: boolean
+                confidence:
+                  type: number

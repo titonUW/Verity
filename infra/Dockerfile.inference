@@ -1,0 +1,39 @@
+# Verity Inference Service Dockerfile
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+FROM base AS deps
+COPY services/inference/pyproject.toml ./
+COPY services/inference/requirements.txt ./
+
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Runtime stage
+FROM base AS runner
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash verity
+
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+COPY services/inference/verity_inference ./verity_inference
+
+# Create model cache directory
+RUN mkdir -p /app/models && chown verity:verity /app/models
+
+USER verity
+
+EXPOSE 8000
+
+CMD ["uvicorn", "verity_inference.main:app", "--host", "0.0.0.0", "--port", "8000"]

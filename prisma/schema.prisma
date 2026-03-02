@@ -1,0 +1,260 @@
+// Verity AI Content Authenticity Platform
+// Database schema for users, API keys, detection jobs, and results
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// User Management
+// ============================================================================
+
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  passwordHash    String?
+  name            String?
+  role            UserRole  @default(USER)
+  emailVerified   Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  apiKeys         ApiKey[]
+  detectionJobs   DetectionJob[]
+  sessions        Session[]
+
+  @@index([email])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+enum UserRole {
+  USER
+  DEVELOPER
+  ADMIN
+}
+
+// ============================================================================
+// API Key Management
+// ============================================================================
+
+model ApiKey {
+  id              String          @id @default(uuid())
+  userId          String
+  name            String
+  keyHash         String          @unique
+  keyPrefix       String          // First 8 chars for identification
+  scopes          String[]        // Array of scope strings
+  rateLimitTier   RateLimitTier   @default(BASIC)
+  isActive        Boolean         @default(true)
+  expiresAt       DateTime?
+  lastUsedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  metadata        Json?
+
+  // Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageRecords    UsageRecord[]
+  detectionJobs   DetectionJob[]
+
+  @@index([keyHash])
+  @@index([keyPrefix])
+  @@index([userId])
+}
+
+enum RateLimitTier {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model UsageRecord {
+  id              String    @id @default(uuid())
+  apiKeyId        String
+  date            DateTime  @db.Date
+  requestCount    Int       @default(0)
+  successCount    Int       @default(0)
+  failureCount    Int       @default(0)
+  imageCount      Int       @default(0)
+  videoCount      Int       @default(0)
+  audioCount      Int       @default(0)
+  textCount       Int       @default(0)
+  bytesProcessed  BigInt    @default(0)
+
+  apiKey          ApiKey    @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@unique([apiKeyId, date])
+  @@index([apiKeyId])
+  @@index([date])
+}
+
+// ============================================================================
+// Detection Jobs
+// ============================================================================
+
+model DetectionJob {
+  id              String        @id @default(uuid())
+  userId          String?
+  apiKeyId        String?
+  externalId      String?       // User-provided tracking ID
+  status          JobStatus     @default(PENDING)
+  mediaType       MediaType
+  mediaHash       String?       // SHA-256 of uploaded content
+  mediaSize       Int?          // Size in bytes
+  mimeType        String?
+  options         Json?         // Detection options (only, excluding, etc.)
+  webhookUrl      String?
+  webhookSent     Boolean       @default(false)
+  progress        Int           @default(0) // 0-100
+  error           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  // Relations
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  apiKey          ApiKey?       @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  results         DetectionResult[]
+
+  @@index([status])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([externalId])
+  @@index([mediaHash])
+  @@index([createdAt])
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  TEXT
+}
+
+// ============================================================================
+// Detection Results
+// ============================================================================
+
+model DetectionResult {
+  id              String    @id @default(uuid())
+  jobId           String
+  signalName      String    // e.g., "ai_generated", "deepfake", "nsfw"
+  verdict         Verdict
+  confidence      Float     // 0.0 to 1.0
+  modelVersion    String
+  processingMs    Int?      // Processing time in milliseconds
+  error           String?
+  metadata        Json?     // Signal-specific data (bounding boxes, annotations, etc.)
+  createdAt       DateTime  @default(now())
+
+  job             DetectionJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, signalName])
+  @@index([jobId])
+  @@index([signalName])
+}
+
+enum Verdict {
+  AI
+  HUMAN
+  UNCERTAIN
+  UNAVAILABLE
+}
+
+// ============================================================================
+// Provenance Records (for .verity containers and C2PA)
+// ============================================================================
+
+model ProvenanceRecord {
+  id                  String    @id @default(uuid())
+  mediaHash           String
+
+  // Verity Container
+  isVerityContainer   Boolean   @default(false)
+  humanOrigin         String?   // "YES", "NO", "UNAVAILABLE"
+  confidenceScore     Float?
+  eventChainValid     Boolean?
+  hasCaptureEvent     Boolean?
+  hasAiEditEvent      Boolean?
+  logProofValid       Boolean?
+  trustReport         Json?
+
+  // C2PA
+  hasC2pa             Boolean   @default(false)
+  c2paIssuer          String?
+  c2paClaimGenerator  String?
+  c2paSignatureValid  Boolean?
+  c2paManifest        Json?
+
+  // Watermark
+  watermarkDetected   Boolean   @default(false)
+  watermarkType       String?
+  watermarkSource     String?
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([mediaHash])
+}
+
+// ============================================================================
+// Audit Logging
+// ============================================================================
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String?
+  apiKeyId    String?
+  action      String    // e.g., "detect.image", "key.create", "key.revoke"
+  resource    String?   // Resource ID if applicable
+  ipAddress   String?
+  userAgent   String?
+  requestId   String?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([apiKeyId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// System Configuration
+// ============================================================================
+
+model SystemConfig {
+  key         String    @id
+  value       Json
+  description String?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([key])
+}

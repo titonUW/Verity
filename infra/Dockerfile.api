@@ -1,0 +1,42 @@
+# Verity API Server Dockerfile
+FROM node:20-alpine AS base
+
+WORKDIR /app
+
+# Install dependencies
+FROM base AS deps
+COPY package*.json ./
+COPY packages/core/package.json ./packages/core/
+COPY packages/verity-file/package.json ./packages/verity-file/
+COPY packages/verity-log/package.json ./packages/verity-log/
+COPY packages/verity-verify/package.json ./packages/verity-verify/
+COPY apps/api/package.json ./apps/api/
+
+RUN npm ci --workspace=@verity/api --include-workspace-root
+
+# Build stage
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+RUN npm run build:packages
+RUN npm run build:api
+
+# Production stage
+FROM base AS runner
+ENV NODE_ENV=production
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 verity
+
+COPY --from=builder --chown=verity:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=verity:nodejs /app/packages ./packages
+COPY --from=builder --chown=verity:nodejs /app/apps/api ./apps/api
+COPY --from=builder --chown=verity:nodejs /app/prisma ./prisma
+
+USER verity
+
+EXPOSE 3000
+
+CMD ["node", "apps/api/dist/index.js"]
