@@ -90,7 +90,8 @@ export default function IntakePage() {
         });
 
         if (!intakeRes.ok) {
-          throw new Error("Intake failed");
+          const errorData = await intakeRes.json().catch(() => ({}));
+          throw new Error(errorData.error || `Intake failed (HTTP ${intakeRes.status})`);
         }
 
         const intakeData = await intakeRes.json();
@@ -109,7 +110,8 @@ export default function IntakePage() {
         });
 
         if (!verifyRes.ok) {
-          throw new Error("Verification failed");
+          const errorData = await verifyRes.json().catch(() => ({}));
+          throw new Error(errorData.error || `Verification failed (HTTP ${verifyRes.status})`);
         }
 
         // Update status to verified
